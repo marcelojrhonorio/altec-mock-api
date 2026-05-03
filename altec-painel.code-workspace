@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../altec-painel"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../layout-tela-pedido"
+		}
+	],
+	"settings": {}
+}

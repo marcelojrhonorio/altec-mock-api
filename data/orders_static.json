@@ -1,0 +1,41 @@
+[
+  {
+    "id": "order-test-001",
+    "type": "INDOOR",
+    "displayId": "PED-999",
+    "createdAt": "2026-04-23T12:00:00.000Z",
+    "orderTiming": "INSTANT",
+    "preparationStartDateTime": "2026-04-23T12:01:00.000Z",
+    "merchant": {
+      "id": "22815773000169-dbc7e35a-c936-4665-9e13-eb55eb8b6824",
+      "name": "Pizza Plaza"
+    },
+    "items": [
+      {
+        "id": "item-001",
+        "name": "Pizza Margherita",
+        "unit": "UN",
+        "quantity": 1,
+        "unitPrice": { "value": 45.00, "currency": "BRL" },
+        "totalPrice": { "value": 45.00, "currency": "BRL" },
+        "externalCode": "prod-001",
+        "options": []
+      }
+    ],
+    "total": {
+      "itemsPrice":   { "value": 45.00, "currency": "BRL" },
+      "otherFees":    { "value":  0.00, "currency": "BRL" },
+      "discount":     { "value":  0.00, "currency": "BRL" },
+      "orderAmount":  { "value": 45.00, "currency": "BRL" }
+    },
+    "payments": {
+      "prepaid": 45.00,
+      "pending":  0.00,
+      "methods": [
+        { "value": 45.00, "currency": "BRL", "type": "PREPAID", "method": "PIX" }
+      ]
+    },
+    "customer": null,
+    "delivery": null
+  }
+]

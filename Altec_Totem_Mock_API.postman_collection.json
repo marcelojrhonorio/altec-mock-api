@@ -1,0 +1,390 @@
+{
+  "info": {
+    "name": "Altec Totem Mock API (Code-based)",
+    "description": "Colecao gerada a partir da implementacao real em src/routes e middlewares.\n\nCredenciais e acesso:\n- Header (auth padrao): Authorization: ApiKey {{apiKey}}\n- API keys conhecidas:\n  - {{apiKey}} = ksk_mock_altec_001 (tenant tnt_altec)\n  - {{apiKeyAlt}} = ksk_mock_altec_002 (tenant tnt_altec)\n  - {{wildcardApiKey}} = ksk_mock_wildcard_001 (acesso wildcard para tenant em endpoints suportados)\n- Bootstrap (publico): nao exige Authorization\n- Codigo de ativacao valido para bootstrap: {{activationCode}}\n\nObservacoes:\n- Endpoints presentes no codigo atual: /config, /kiosks/bootstrap, /catalog, /orderUpdate, /orders/{orderId}, /ws/emit e / (root).\n- WebSocket disponivel em: ws://127.0.0.1:10099/v1/ws?api_key={{apiKey}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "Authorization",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "ApiKey {{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseOrigin",
+      "value": "http://127.0.0.1:10099"
+    },
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:10099/v1"
+    },
+    {
+      "key": "apiKey",
+      "value": "ksk_mock_altec_001"
+    },
+    {
+      "key": "apiKeyAlt",
+      "value": "ksk_mock_altec_002"
+    },
+    {
+      "key": "wildcardApiKey",
+      "value": "ksk_mock_wildcard_001"
+    },
+    {
+      "key": "tenantId",
+      "value": "tnt_altec"
+    },
+    {
+      "key": "establishmentId",
+      "value": "est_sp_centro"
+    },
+    {
+      "key": "kioskId",
+      "value": "kio_009"
+    },
+    {
+      "key": "activationCode",
+      "value": "ACT-8812-XXQZ"
+    },
+    {
+      "key": "orderId",
+      "value": "order-test-001"
+    },
+    {
+      "key": "ifNoneMatch",
+      "value": ""
+    },
+    {
+      "key": "wsUrl",
+      "value": "ws://127.0.0.1:10099/v1/ws?api_key={{apiKey}}"
+    }
+  ],
+  "item": [
+    {
+      "name": "Root",
+      "item": [
+        {
+          "name": "GET /",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseOrigin}}/",
+              "host": [
+                "{{baseOrigin}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Endpoint de informacoes gerais da API."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Config",
+      "item": [
+        {
+          "name": "GET /tenants/:tenantId/establishments/:establishmentId/kiosks/:kioskId/config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/establishments/{{establishmentId}}/kiosks/{{kioskId}}/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants",
+                "{{tenantId}}",
+                "establishments",
+                "{{establishmentId}}",
+                "kiosks",
+                "{{kioskId}}",
+                "config"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /config com include e locale",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/establishments/{{establishmentId}}/kiosks/{{kioskId}}/config?include=branding,payment_methods&locale=pt-BR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants",
+                "{{tenantId}}",
+                "establishments",
+                "{{establishmentId}}",
+                "kiosks",
+                "{{kioskId}}",
+                "config"
+              ],
+              "query": [
+                {
+                  "key": "include",
+                  "value": "branding,payment_methods"
+                },
+                {
+                  "key": "locale",
+                  "value": "pt-BR"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /config com If-None-Match",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "If-None-Match",
+                "value": "{{ifNoneMatch}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/establishments/{{establishmentId}}/kiosks/{{kioskId}}/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants",
+                "{{tenantId}}",
+                "establishments",
+                "{{establishmentId}}",
+                "kiosks",
+                "{{kioskId}}",
+                "config"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bootstrap (Sem Auth)",
+      "item": [
+        {
+          "name": "POST /kiosks/bootstrap",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activation_code\": \"{{activationCode}}\",\n  \"device_serial\": \"SN-001\",\n  \"app_version\": \"1.0.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kiosks/bootstrap",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kiosks",
+                "bootstrap"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "GET /catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalog"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /catalog com If-None-Match",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "If-None-Match",
+                "value": "{{ifNoneMatch}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/catalog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalog"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OrderUpdate",
+      "item": [
+        {
+          "name": "POST /orderUpdate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"evt-test-001\",\n  \"eventType\": \"CREATED\",\n  \"orderId\": \"{{orderId}}\",\n  \"createdAt\": \"2026-05-02T12:00:00.000Z\",\n  \"metadata\": {\n    \"order\": {\n      \"id\": \"{{orderId}}\",\n      \"type\": \"INDOOR\",\n      \"displayId\": \"PED-TEST\",\n      \"createdAt\": \"2026-05-02T12:00:00.000Z\",\n      \"orderTiming\": \"INSTANT\",\n      \"preparationStartDateTime\": \"2026-05-02T12:01:00.000Z\",\n      \"merchant\": {\n        \"id\": \"merch-001\",\n        \"name\": \"Test Store\"\n      },\n      \"items\": [\n        {\n          \"id\": \"item-001\",\n          \"name\": \"Pizza\",\n          \"unit\": \"UN\",\n          \"quantity\": 1,\n          \"unitPrice\": {\n            \"value\": 45.0,\n            \"currency\": \"BRL\"\n          },\n          \"totalPrice\": {\n            \"value\": 45.0,\n            \"currency\": \"BRL\"\n          },\n          \"externalCode\": \"prod-001\",\n          \"options\": []\n        }\n      ],\n      \"total\": {\n        \"itemsPrice\": {\n          \"value\": 45.0,\n          \"currency\": \"BRL\"\n        },\n        \"otherFees\": {\n          \"value\": 0.0,\n          \"currency\": \"BRL\"\n        },\n        \"discount\": {\n          \"value\": 0.0,\n          \"currency\": \"BRL\"\n        },\n        \"orderAmount\": {\n          \"value\": 45.0,\n          \"currency\": \"BRL\"\n        }\n      },\n      \"payments\": {\n        \"prepaid\": 45.0,\n        \"pending\": 0.0,\n        \"methods\": [\n          {\n            \"value\": 45.0,\n            \"currency\": \"BRL\",\n            \"type\": \"PREPAID\",\n            \"method\": \"PIX\"\n          }\n        ]\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orderUpdate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orderUpdate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "GET /orders/:orderId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WebSocket Mock Trigger",
+      "item": [
+        {
+          "name": "POST /ws/emit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"catalog_invalidated\",\n  \"target\": {\n    \"tenant_id\": \"{{tenantId}}\",\n    \"kiosk_key\": \"{{tenantId}}|{{establishmentId}}|{{kioskId}}\"\n  },\n  \"payload\": {\n    \"reason\": \"manual_test\",\n    \"source\": \"postman\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ws/emit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ws",
+                "emit"
+              ]
+            },
+            "description": "Dispara evento websocket para sessoes conectadas."
+          },
+          "response": []
+        },
+        {
+          "name": "WS URL (referencia)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{wsUrl}}",
+              "host": [
+                "{{wsUrl}}"
+              ]
+            },
+            "description": "Referencia de conexao WebSocket: {{wsUrl}}"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

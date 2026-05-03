@@ -1,0 +1,24 @@
+{
+  "name": "altec-totem-mock-api",
+  "version": "1.2.0",
+  "description": "Mock server for Totem API (Riser 3) — Scalar Catalog + Open Delivery v1.7.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "bun src/server.js",
+    "dev": "bun --watch src/server.js",
+    "test": "bun run tests/run_tests.js"
+  },
+  "packageManager": "bun@1.3.5",
+  "keywords": ["mock", "api", "totem", "altec", "kiosk"],
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.3",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

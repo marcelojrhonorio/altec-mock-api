@@ -1,0 +1,484 @@
+openapi: 3.0.3
+info:
+  title: Totem API Mock
+  description: |
+    API REST mockada para o módulo Totem (Autoatendimento) do Riser 3.
+    Implementa endpoints de configuração, bootstrap e fluxo de catálogo/pedido
+    aderente ao OpenDelivery para uso em ambiente de desenvolvimento.
+  version: 1.3.0
+  contact:
+    name: Altec / K9 Tecnologia
+    url: https://www.altec.ws
+
+servers:
+  - url: http://127.0.0.1:10099/v1
+    description: Local Development
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Configuracao
+  - name: Bootstrap
+  - name: Merchant
+  - name: Catalogo
+  - name: Pedidos
+  - name: WebSocket
+  - name: Legacy
+
+paths:
+  /tenants/{tenantId}/establishments/{establishmentId}/kiosks/{kioskId}/config:
+    get:
+      tags: [Configuracao]
+      summary: Obter configuracao do kiosk
+      operationId: getConfig
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: establishmentId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: kioskId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: include
+          in: query
+          required: false
+          schema: { type: string }
+        - name: If-None-Match
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Configuracao encontrada
+          headers:
+            ETag:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+        '304':
+          description: Not Modified
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /kiosks/bootstrap:
+    post:
+      tags: [Bootstrap]
+      summary: Ativar/registrar kiosk
+      operationId: postBootstrap
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootstrapRequest'
+      responses:
+        '200':
+          description: Kiosk ativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootstrapResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /merchant:
+    get:
+      tags: [Merchant]
+      summary: Obter catalogo OpenDelivery do merchant
+      description: |
+        Endpoint principal para tela de categorias/produtos/customizacao.
+        Retorna o payload Merchant com categories, itemOffers, items e optionGroups.
+        Suporta ETag.
+      operationId: getMerchant
+      parameters:
+        - name: If-None-Match
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Merchant completo
+          headers:
+            ETag:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantOpenDelivery'
+        '304':
+          description: Not Modified
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /catalog/items/{itemId}/suggestions:
+    get:
+      tags: [Catalogo]
+      summary: Sugestoes de acompanhamento por item (extensao custom)
+      description: |
+        Endpoint custom para UI de sugestões.
+        Recebe itemId e retorna itemOffers sugeridos com opcões de customização.
+      operationId: getItemSuggestions
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Sugestoes retornadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /newEvent:
+    post:
+      tags: [Pedidos]
+      summary: Receber novo evento de pedido (OpenDelivery webhook)
+      operationId: postNewEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderEvent'
+      responses:
+        '202':
+          description: Evento aceito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ACCEPTED }
+                  orderId: { type: string }
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /orders/{orderId}:
+    get:
+      tags: [Pedidos]
+      summary: Consultar pedido completo
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /orders/{orderId}/details:
+    patch:
+      tags: [Pedidos]
+      summary: Atualizar detalhes permitidos do pedido
+      description: |
+        Atualiza apenas campos não relacionados a status.
+        Campos permitidos neste mock: preparationStartDateTime e extraInfo.
+      operationId: patchOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                preparationStartDateTime:
+                  type: string
+                  format: date-time
+                extraInfo:
+                  type: string
+      responses:
+        '200':
+          description: Pedido atualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: UPDATED }
+                  orderId: { type: string }
+                  updatedFields:
+                    type: array
+                    items: { type: string }
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /ws/emit:
+    post:
+      tags: [WebSocket]
+      summary: Emitir evento websocket (mock)
+      operationId: postWsEmit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type]
+              properties:
+                event_type: { type: string }
+                target:
+                  type: object
+                  properties:
+                    tenant_id: { type: string }
+                    kiosk_key: { type: string }
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Evento emitido
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /catalog:
+    get:
+      tags: [Legacy]
+      summary: Legado descontinuado
+      deprecated: true
+      responses:
+        '410':
+          $ref: '#/components/responses/GoneError'
+
+  /orderUpdate:
+    post:
+      tags: [Legacy]
+      summary: Legado descontinuado
+      deprecated: true
+      responses:
+        '410':
+          $ref: '#/components/responses/GoneError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Formato `ApiKey {chave}`.
+
+  schemas:
+    ConfigResponse:
+      type: object
+      properties:
+        meta:
+          type: object
+        branding:
+          type: object
+        establishment:
+          type: object
+        media:
+          type: array
+          items: { type: object }
+        media_placement_rules:
+          type: array
+          items: { type: object }
+        payment_methods:
+          type: array
+          items: { type: object }
+        totem_behavior:
+          type: object
+        features:
+          type: object
+        localization:
+          type: object
+
+    BootstrapRequest:
+      type: object
+      required: [activation_code, device_serial, app_version]
+      properties:
+        activation_code: { type: string }
+        device_serial: { type: string }
+        app_version: { type: string }
+
+    BootstrapResponse:
+      type: object
+      properties:
+        tenant_id: { type: string }
+        establishment_id: { type: string }
+        kiosk_id: { type: string }
+        api_key: { type: string }
+        expires_at: { type: string, format: date-time }
+
+    MerchantOpenDelivery:
+      type: object
+      properties:
+        lastUpdate: { type: string, format: date-time }
+        TTL: { type: integer }
+        id: { type: string }
+        status: { type: string }
+        basicInfo: { type: object }
+        services:
+          type: array
+          items: { type: object }
+        menus:
+          type: array
+          items: { type: object }
+        categories:
+          type: array
+          items: { type: object }
+        itemOffers:
+          type: array
+          items: { type: object }
+        items:
+          type: array
+          items: { type: object }
+        optionGroups:
+          type: array
+          items: { type: object }
+        availabilities:
+          type: array
+          items: { type: object }
+
+    SuggestionResponse:
+      type: object
+      properties:
+        itemId: { type: string }
+        suggestions:
+          type: array
+          items:
+            type: object
+            properties:
+              itemOfferId: { type: string }
+              item: { type: object }
+              price: { type: object }
+              optionGroups:
+                type: array
+                items: { type: object }
+
+    OrderEvent:
+      type: object
+      required: [eventId, eventType, orderId, metadata]
+      properties:
+        eventId: { type: string }
+        eventType:
+          type: string
+          enum: [CREATED]
+        orderId: { type: string }
+        orderURL: { type: string, format: uri }
+        createdAt: { type: string, format: date-time }
+        metadata:
+          type: object
+          properties:
+            order:
+              $ref: '#/components/schemas/Order'
+
+    Order:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        displayId: { type: string }
+        createdAt: { type: string, format: date-time }
+        orderTiming: { type: string }
+        preparationStartDateTime: { type: string, format: date-time }
+        merchant: { type: object }
+        items:
+          type: array
+          items: { type: object }
+        total: { type: object }
+        payments: { type: object }
+        customer: { type: object, nullable: true }
+        delivery: { type: object, nullable: true }
+        extraInfo: { type: string }
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }
+            trace_id: { type: string }
+            timestamp: { type: string, format: date-time }
+
+  responses:
+    UnauthorizedError:
+      description: API key ausente ou invalida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: Acesso negado para o tenant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: Recurso nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: Body ou parametros invalidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Campos obrigatorios faltando ou invalidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GoneError:
+      description: Endpoint descontinuado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
