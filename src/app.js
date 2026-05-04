@@ -16,6 +16,16 @@ const wsEmitRoute = require('./routes/ws_emit');
 
 const app = express();
 
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const { ALLOWED_ORIGINS } = require('./config');
+const corsOptions = {
+  origin: ALLOWED_ORIGINS,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'If-None-Match'],
+  exposedHeaders: ['ETag', 'Cache-Control'],
+};
+app.use(cors(corsOptions));
+
 // ── Static assets (public) ───────────────────────────────────────────────────
 app.use(
   '/assets',
@@ -45,17 +55,6 @@ app.use((req, res, next) => {
     next();
   });
 });
-
-// ── CORS ──────────────────────────────────────────────────────────────────────
-const { ALLOWED_ORIGINS } = require('./config');
-app.use(
-  cors({
-    origin: ALLOWED_ORIGINS,
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'If-None-Match'],
-    exposedHeaders: ['ETag', 'Cache-Control'],
-  })
-);
 
 // ── Meta (request_id / trace_id / timestamp) ─────────────────────────────────
 app.use(metaMiddleware);
