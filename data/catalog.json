@@ -1,5 +1,29 @@
 [
   {
+    "id": "cat-101",
+    "description": "Sanduíches de Frango",
+    "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+    "image_crc32": null,
+    "products": [],
+    "children": []
+  },
+  {
+    "id": "cat-102",
+    "description": "Sanduíches de Carne",
+    "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+    "image_crc32": null,
+    "products": [],
+    "children": []
+  },
+  {
+    "id": "cat-103",
+    "description": "Acompanhamentos",
+    "image_url": "/assets/categories/Acompanhamentos.png",
+    "image_crc32": null,
+    "products": [],
+    "children": []
+  },
+  {
     "id": "cat-001",
     "description": "Pizzas",
     "image_url": "https://cdn.example.com/catalog/categories/cat-001.jpg",
@@ -69,7 +93,7 @@
   {
     "id": "cat-002",
     "description": "Bebidas",
-    "image_url": "https://cdn.example.com/catalog/categories/cat-002.jpg",
+    "image_url": "/assets/categories/Bebidas.png",
     "image_crc32": "e5f6a7b8",
     "products": [
       {
@@ -101,5 +125,21 @@
         "children": []
       }
     ]
+  },
+  {
+    "id": "cat-104",
+    "description": "Sobremesas",
+    "image_url": "/assets/categories/Sobremesas.png",
+    "image_crc32": null,
+    "products": [],
+    "children": []
+  },
+  {
+    "id": "cat-105",
+    "description": "MacOfertas",
+    "image_url": "/assets/categories/McOfertas.png",
+    "image_crc32": null,
+    "products": [],
+    "children": []
   }
 ]

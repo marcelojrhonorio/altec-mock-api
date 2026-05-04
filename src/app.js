@@ -2,6 +2,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const { metaMiddleware } = require('./middlewares/meta');
 const { errorHandler } = require('./middlewares/error_handler');
@@ -14,6 +15,15 @@ const ordersRoute = require('./routes/orders');
 const wsEmitRoute = require('./routes/ws_emit');
 
 const app = express();
+
+// ── Static assets (public) ───────────────────────────────────────────────────
+app.use(
+  '/assets',
+  express.static(path.join(__dirname, '../assets'), {
+    etag: true,
+    maxAge: '1h',
+  })
+);
 
 // ── Body parsing ──────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
