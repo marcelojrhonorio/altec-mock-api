@@ -6,7 +6,7 @@
   },
   "branding": {
     "tenant_name": "Altec Foods",
-    "logo_url": "https://cdn.altec.com.br/tnt_altec/branding/logo.svg",
+    "logo_url": "/assets/common/Promo%20Image.png",
     "primary_color": "#00c437",
     "updated_at": "2026-04-10T10:00:00Z"
   },
@@ -36,7 +36,7 @@
       {
         "id": "med_1001",
         "type": "image",
-        "url": "https://cdn.altec.com.br/tnt_altec/media/promo_abril.jpg",
+        "url": "/assets/common/Background%20Image.png",
         "duration_seconds": 8,
         "placements": ["START_SCREEN", "IDLE_MODE"],
         "priority": 90,
