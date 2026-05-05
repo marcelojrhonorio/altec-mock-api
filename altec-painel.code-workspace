@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../layout-tela-pedido"
+		},
+		{
+			"path": "../layout-tela-pedido-produto-selected"
 		}
 	],
 	"settings": {}
