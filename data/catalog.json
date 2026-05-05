@@ -4,7 +4,124 @@
     "description": "Sanduíches de Frango",
     "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
     "image_crc32": null,
-    "products": [],
+    "products": [
+      {
+        "id": "prod-101-01",
+        "description": "McFrango",
+        "price": "16.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+        "image_crc32": null,
+        "compositions": [
+          {
+            "id": "comp-101-01-a",
+            "type": "EXTRA",
+            "product": {
+              "id": "prod-extra-001",
+              "description": "Queijo Extra",
+              "price": "1.50",
+              "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+              "image_crc32": null,
+              "compositions": [],
+              "combinations": []
+            }
+          }
+        ],
+        "combinations": [
+          {
+            "id": "comb-10101-01",
+            "description": "Escolha o tipo de preparo",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10101-01-a",
+                "description": "Grelhado",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10101-01-b",
+                "description": "Crocante",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-101-02",
+        "description": "McFrango Crispy",
+        "price": "18.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10102-01",
+            "description": "Escolha o tamanho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10102-01-a",
+                "description": "Simples",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10102-01-b",
+                "description": "Duplo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-101-03",
+        "description": "Chicken Supreme",
+        "price": "22.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+        "image_crc32": null,
+        "compositions": [
+          {
+            "id": "comp-101-03-a",
+            "type": "EXTRA",
+            "product": {
+              "id": "prod-extra-002",
+              "description": "Bacon Extra",
+              "price": "2.00",
+              "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+              "image_crc32": null,
+              "compositions": [],
+              "combinations": []
+            }
+          }
+        ],
+        "combinations": []
+      },
+      {
+        "id": "prod-101-04",
+        "description": "McFrango Duplo",
+        "price": "21.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Frango.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      }
+    ],
     "children": []
   },
   {
@@ -12,7 +129,98 @@
     "description": "Sanduíches de Carne",
     "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
     "image_crc32": null,
-    "products": [],
+    "products": [
+      {
+        "id": "prod-102-01",
+        "description": "Big Mac",
+        "price": "24.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+        "image_crc32": null,
+        "compositions": [
+          {
+            "id": "comp-102-01-a",
+            "type": "EXTRA",
+            "product": {
+              "id": "prod-extra-001",
+              "description": "Queijo Extra",
+              "price": "1.50",
+              "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+              "image_crc32": null,
+              "compositions": [],
+              "combinations": []
+            }
+          }
+        ],
+        "combinations": [
+          {
+            "id": "comb-10201-01",
+            "description": "Escolha o molho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10201-01-a",
+                "description": "Molho Big Mac",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10201-01-b",
+                "description": "Ketchup",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-102-02",
+        "description": "Quarterão com Queijo",
+        "price": "22.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+        "image_crc32": null,
+        "compositions": [
+          {
+            "id": "comp-102-02-a",
+            "type": "EXTRA",
+            "product": {
+              "id": "prod-extra-002",
+              "description": "Bacon Extra",
+              "price": "2.00",
+              "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+              "image_crc32": null,
+              "compositions": [],
+              "combinations": []
+            }
+          }
+        ],
+        "combinations": []
+      },
+      {
+        "id": "prod-102-03",
+        "description": "McDouble",
+        "price": "18.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      },
+      {
+        "id": "prod-102-04",
+        "description": "Cheeseburger",
+        "price": "13.90",
+        "image_url": "/assets/categories/Sandu%C3%ADches%20de%20Carne.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      }
+    ],
     "children": []
   },
   {
@@ -20,21 +228,152 @@
     "description": "Acompanhamentos",
     "image_url": "/assets/categories/Acompanhamentos.png",
     "image_crc32": null,
-    "products": [],
+    "products": [
+      {
+        "id": "prod-103-01",
+        "description": "Batata Frita",
+        "price": "9.90",
+        "image_url": "/assets/categories/Acompanhamentos.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10301-01",
+            "description": "Escolha o tamanho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10301-01-a",
+                "description": "Pequena",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10301-01-b",
+                "description": "Média",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10301-01-c",
+                "description": "Grande",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-103-02",
+        "description": "Chicken McNuggets",
+        "price": "19.90",
+        "image_url": "/assets/categories/Acompanhamentos.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10302-01",
+            "description": "Escolha a quantidade",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10302-01-a",
+                "description": "4 Peças",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10302-01-b",
+                "description": "6 Peças",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10302-01-c",
+                "description": "10 Peças",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-103-03",
+        "description": "Onion Rings",
+        "price": "11.90",
+        "image_url": "/assets/categories/Acompanhamentos.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10303-01",
+            "description": "Escolha o tamanho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10303-01-a",
+                "description": "Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10303-01-b",
+                "description": "Médio",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-103-04",
+        "description": "Salada Caesar",
+        "price": "14.90",
+        "image_url": "/assets/categories/Acompanhamentos.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      }
+    ],
     "children": []
   },
   {
     "id": "cat-002",
     "description": "Bebidas",
     "image_url": "/assets/categories/Bebidas.png",
-    "image_crc32": "e5f6a7b8",
+    "image_crc32": null,
     "products": [
       {
         "id": "prod-003",
         "description": "Refrigerante Lata",
         "price": "6.00",
-        "image_url": "https://cdn.example.com/catalog/products/prod-003.jpg",
-        "image_crc32": "f6a7b8c9",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
         "compositions": [],
         "combinations": []
       },
@@ -42,10 +381,148 @@
         "id": "prod-004",
         "description": "Suco Natural",
         "price": "9.50",
-        "image_url": "https://cdn.example.com/catalog/products/prod-004.jpg",
-        "image_crc32": "a7b8c9d0",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
         "compositions": [],
         "combinations": []
+      },
+      {
+        "id": "prod-002-03",
+        "description": "Refrigerante Copo",
+        "price": "8.00",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-00203-01",
+            "description": "Escolha o tamanho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-00203-01-a",
+                "description": "Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00203-01-b",
+                "description": "Médio",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00203-01-c",
+                "description": "Grande",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-002-04",
+        "description": "Milk Shake",
+        "price": "15.90",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-00204-01",
+            "description": "Escolha o sabor",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-00204-01-a",
+                "description": "Baunilha",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00204-01-b",
+                "description": "Chocolate",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00204-01-c",
+                "description": "Morango",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-002-05",
+        "description": "Água Mineral",
+        "price": "4.50",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      },
+      {
+        "id": "prod-002-06",
+        "description": "McFizz",
+        "price": "9.00",
+        "image_url": "/assets/categories/Bebidas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-00206-01",
+            "description": "Escolha o sabor",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-00206-01-a",
+                "description": "Limão",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00206-01-b",
+                "description": "Maracujá",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-00206-01-c",
+                "description": "Melancia",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
       }
     ],
     "children": [
@@ -64,7 +541,104 @@
     "description": "Sobremesas",
     "image_url": "/assets/categories/Sobremesas.png",
     "image_crc32": null,
-    "products": [],
+    "products": [
+      {
+        "id": "prod-104-01",
+        "description": "Casquinha Baunilha",
+        "price": "5.90",
+        "image_url": "/assets/categories/Sobremesas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      },
+      {
+        "id": "prod-104-02",
+        "description": "McFlurry Oreo",
+        "price": "13.90",
+        "image_url": "/assets/categories/Sobremesas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10402-01",
+            "description": "Escolha o tamanho",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10402-01-a",
+                "description": "Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10402-01-b",
+                "description": "Grande",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-104-03",
+        "description": "Torta de Maçã",
+        "price": "7.90",
+        "image_url": "/assets/categories/Sobremesas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": []
+      },
+      {
+        "id": "prod-104-04",
+        "description": "Sundae Caramelo",
+        "price": "10.90",
+        "image_url": "/assets/categories/Sobremesas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10404-01",
+            "description": "Escolha a cobertura",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10404-01-a",
+                "description": "Caramelo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10404-01-b",
+                "description": "Chocolate",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10404-01-c",
+                "description": "Morango",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "children": []
   },
   {
@@ -72,7 +646,344 @@
     "description": "MacOfertas",
     "image_url": "/assets/categories/McOfertas.png",
     "image_crc32": null,
-    "products": [],
+    "products": [
+      {
+        "id": "prod-105-01",
+        "description": "Menu Big Mac",
+        "price": "34.90",
+        "image_url": "/assets/categories/McOfertas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10501-01",
+            "description": "Escolha a bebida",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10501-01-a",
+                "description": "Refrigerante Lata",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10501-01-b",
+                "description": "Refrigerante Copo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10501-01-c",
+                "description": "Suco Natural",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10501-01-d",
+                "description": "Água Mineral",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "comb-10501-02",
+            "description": "Escolha o acompanhamento",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10501-02-a",
+                "description": "Batata Frita Pequena",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10501-02-b",
+                "description": "Batata Frita Média",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10501-02-c",
+                "description": "Onion Rings Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-105-02",
+        "description": "Menu McFrango",
+        "price": "29.90",
+        "image_url": "/assets/categories/McOfertas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10502-01",
+            "description": "Escolha a bebida",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10502-01-a",
+                "description": "Refrigerante Lata",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10502-01-b",
+                "description": "Refrigerante Copo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10502-01-c",
+                "description": "Suco Natural",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10502-01-d",
+                "description": "Água Mineral",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "comb-10502-02",
+            "description": "Escolha o acompanhamento",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10502-02-a",
+                "description": "Batata Frita Pequena",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10502-02-b",
+                "description": "Batata Frita Média",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10502-02-c",
+                "description": "Onion Rings Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-105-03",
+        "description": "Menu McNuggets 6 Peças",
+        "price": "27.90",
+        "image_url": "/assets/categories/McOfertas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10503-01",
+            "description": "Escolha a bebida",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10503-01-a",
+                "description": "Refrigerante Lata",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10503-01-b",
+                "description": "Refrigerante Copo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10503-01-c",
+                "description": "Suco Natural",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10503-01-d",
+                "description": "Água Mineral",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "comb-10503-02",
+            "description": "Escolha o acompanhamento",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10503-02-a",
+                "description": "Batata Frita Pequena",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10503-02-b",
+                "description": "Batata Frita Média",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10503-02-c",
+                "description": "Onion Rings Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "prod-105-04",
+        "description": "Menu Quarterão com Queijo",
+        "price": "33.90",
+        "image_url": "/assets/categories/McOfertas.png",
+        "image_crc32": null,
+        "compositions": [],
+        "combinations": [
+          {
+            "id": "comb-10504-01",
+            "description": "Escolha a bebida",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10504-01-a",
+                "description": "Refrigerante Lata",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10504-01-b",
+                "description": "Refrigerante Copo",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10504-01-c",
+                "description": "Suco Natural",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10504-01-d",
+                "description": "Água Mineral",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "comb-10504-02",
+            "description": "Escolha o acompanhamento",
+            "priceRule": "FIXED",
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "children": [
+              {
+                "id": "comb-10504-02-a",
+                "description": "Batata Frita Pequena",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10504-02-b",
+                "description": "Batata Frita Média",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              },
+              {
+                "id": "comb-10504-02-c",
+                "description": "Onion Rings Pequeno",
+                "priceRule": "FIXED",
+                "minQuantity": 0,
+                "maxQuantity": 1,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "children": []
   }
 ]
