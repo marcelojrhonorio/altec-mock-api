@@ -3,28 +3,20 @@
 const path = require('path');
 const express = require('express');
 const { authenticate } = require('../middlewares/auth');
-const { generateETag, isNotModified } = require('../services/etag');
 
 const router = express.Router();
 
-// Load static catalog once — deterministic ETag computed at startup
+// Load static catalog once
 const CATALOG_DATA = require(path.join(__dirname, '../../data/catalog.json'));
-const CATALOG_ETAG = generateETag('catalog', CATALOG_DATA);
 
 /**
  * GET /v1/catalog
  * Returns full Scalar Catalog API payload.
- * Supports ETag / If-None-Match → 304.
  */
 router.get('/catalog', authenticate(), (req, res) => {
-  const ifNoneMatch = req.headers['if-none-match'];
-
-  if (isNotModified(ifNoneMatch, CATALOG_ETAG)) {
-    return res.status(304).end();
-  }
-
-  res.set('ETag', CATALOG_ETAG);
-  res.set('Cache-Control', 'private, max-age=300, stale-if-error=86400');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   return res.status(200).json(CATALOG_DATA);
 });
 
