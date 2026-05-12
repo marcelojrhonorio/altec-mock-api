@@ -39,6 +39,7 @@ No padrao OD, a customizacao e modelada por:
 Casos implementados no mock:
 - remover ingrediente (ex.: Sem Cebola)
 - adicionar ingrediente (ex.: Queijo Extra, Bacon Extra)
+- todo produto possui complementos fake por produto (multiplas opcoes)
 
 ### 3) Sugestoes de acompanhamento
 OpenDelivery nao define endpoint especifico de sugestao contextual.
@@ -94,6 +95,8 @@ Validacoes:
 
 ### Catalogo/Pedido (atual)
 - `GET /v1/merchant`
+- `GET /v1/products/{id}` (compatibilidade)
+- `GET /v1/catalog` (compatibilidade para lista de categorias/produtos)
 - `GET /v1/catalog/items/{itemId}/suggestions` (extensao custom)
 - `POST /v1/newEvent`
 - `GET /v1/orders/{orderId}`
@@ -104,7 +107,6 @@ Validacoes:
 - `WS /v1/ws?api_key=...`
 
 ### Legado descontinuado
-- `GET /v1/catalog` -> `410 GONE`
 - `POST /v1/orderUpdate` -> `410 GONE`
 
 ## Arquivos de dados

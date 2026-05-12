@@ -368,6 +368,48 @@ async function runAll() {
     assert('status 401', r.status === 401);
   });
 
+  await test('GET /merchant — 200 with OpenDelivery essentials', async () => {
+    const r = await request('GET', '/merchant', { headers: AUTH });
+    assert('status 200', r.status === 200);
+    assert('has categories array', Array.isArray(r.body?.categories));
+    assert('has itemOffers array', Array.isArray(r.body?.itemOffers));
+    assert('has items array', Array.isArray(r.body?.items));
+    assert('has optionGroups array', Array.isArray(r.body?.optionGroups));
+  });
+
+  await test('GET /merchant — every product has complements mapped', async () => {
+    const r = await request('GET', '/merchant', { headers: AUTH });
+    const itemOffers = Array.isArray(r.body?.itemOffers) ? r.body.itemOffers : [];
+    const optionGroups = Array.isArray(r.body?.optionGroups) ? r.body.optionGroups : [];
+    const optionGroupsById = new Map(optionGroups.map((g) => [g.id, g]));
+
+    const offersWithoutGroups = [];
+    const groupsWithNoOptions = [];
+
+    for (const offer of itemOffers) {
+      const groupIds = Array.isArray(offer?.optionGroupsId) ? offer.optionGroupsId : [];
+      if (groupIds.length === 0) {
+        offersWithoutGroups.push(offer?.itemId || offer?.id || 'unknown');
+        continue;
+      }
+
+      for (const groupId of groupIds) {
+        const group = optionGroupsById.get(groupId);
+        if (!group) {
+          groupsWithNoOptions.push(`${offer?.itemId || 'unknown'}:missing:${groupId}`);
+          continue;
+        }
+        const options = Array.isArray(group.options) ? group.options : [];
+        if (options.length < 2) {
+          groupsWithNoOptions.push(`${offer?.itemId || 'unknown'}:${groupId}:few-options`);
+        }
+      }
+    }
+
+    assert('no offer without optionGroupsId', offersWithoutGroups.length === 0, offersWithoutGroups.join(','));
+    assert('all referenced groups exist and have multiple options', groupsWithNoOptions.length === 0, groupsWithNoOptions.join(','));
+  });
+
   // ── orderUpdate ──────────────────────────────────────────────────────────
   const testOrderId = `order-test-${Date.now()}`;
   const validEvent = {

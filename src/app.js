@@ -78,7 +78,9 @@ app.get('/', (req, res) => {
     endpoints: [
       'GET  /v1/tenants/:tenantId/establishments/:establishmentId/kiosks/:kioskId/config',
       'POST /v1/kiosks/bootstrap',
+      'GET  /v1/merchant',
       'GET  /v1/catalog',
+      'GET  /v1/products/:id',
       'POST /v1/orderUpdate',
       'GET  /v1/orders/:orderId',
       'POST /v1/ws/emit  (mock trigger)',

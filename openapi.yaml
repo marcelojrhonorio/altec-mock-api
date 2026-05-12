@@ -352,6 +352,7 @@ components:
 
     MerchantOpenDelivery:
       type: object
+      required: [categories, itemOffers, items, optionGroups]
       properties:
         lastUpdate: { type: string, format: date-time }
         TTL: { type: integer }
@@ -366,16 +367,59 @@ components:
           items: { type: object }
         categories:
           type: array
-          items: { type: object }
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              itemOfferId:
+                type: array
+                items: { type: string }
         itemOffers:
           type: array
-          items: { type: object }
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              itemId: { type: string }
+              optionGroupsId:
+                type: array
+                items: { type: string }
         items:
           type: array
-          items: { type: object }
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              description: { type: string }
+              image:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    url: { type: string }
         optionGroups:
           type: array
-          items: { type: object }
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              minPermitted: { type: integer }
+              maxPermitted: { type: integer }
+              options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string }
+                    name: { type: string }
+                    price:
+                      type: object
+                      properties:
+                        value: { type: number }
+                        currency: { type: string }
         availabilities:
           type: array
           items: { type: object }
