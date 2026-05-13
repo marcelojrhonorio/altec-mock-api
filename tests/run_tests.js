@@ -384,7 +384,7 @@ async function runAll() {
     const optionGroupsById = new Map(optionGroups.map((g) => [g.id, g]));
 
     const offersWithoutGroups = [];
-    const groupsWithNoOptions = [];
+    const offersWithInvalidComplements = [];
 
     for (const offer of itemOffers) {
       const groupIds = Array.isArray(offer?.optionGroupsId) ? offer.optionGroupsId : [];
@@ -393,21 +393,87 @@ async function runAll() {
         continue;
       }
 
+      let totalOptions = 0;
+      let hasComplementsGroup = false;
+      let complementsCount = 0;
+      let hasInvalidPrice = false;
+
       for (const groupId of groupIds) {
         const group = optionGroupsById.get(groupId);
         if (!group) {
-          groupsWithNoOptions.push(`${offer?.itemId || 'unknown'}:missing:${groupId}`);
+          offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:missing:${groupId}`);
           continue;
         }
+
         const options = Array.isArray(group.options) ? group.options : [];
-        if (options.length < 2) {
-          groupsWithNoOptions.push(`${offer?.itemId || 'unknown'}:${groupId}:few-options`);
+        totalOptions += options.length;
+
+        if (String(group?.name || '').toLowerCase() === 'complementos') {
+          hasComplementsGroup = true;
+          complementsCount = options.length;
         }
+
+        for (const option of options) {
+          const price = option?.price;
+          const hasValidValue = typeof price?.value === 'number' && Number.isFinite(price.value);
+          const hasValidCurrency = price?.currency === 'BRL';
+          if (!hasValidValue || !hasValidCurrency) {
+            hasInvalidPrice = true;
+            break;
+          }
+        }
+
+        if (hasInvalidPrice) {
+          break;
+        }
+      }
+
+      if (!hasComplementsGroup) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:missing-complements-group`);
+        continue;
+      }
+
+      if (complementsCount < 5) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-complements:${complementsCount}`);
+        continue;
+      }
+
+      if (totalOptions < 5) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-options-total:${totalOptions}`);
+        continue;
+      }
+
+      if (hasInvalidPrice) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:invalid-price`);
       }
     }
 
     assert('no offer without optionGroupsId', offersWithoutGroups.length === 0, offersWithoutGroups.join(','));
-    assert('all referenced groups exist and have multiple options', groupsWithNoOptions.length === 0, groupsWithNoOptions.join(','));
+    assert(
+      'all products expose at least five complements with OpenDelivery pricing',
+      offersWithInvalidComplements.length === 0,
+      offersWithInvalidComplements.join(','),
+    );
+  });
+
+  await test('GET /products/:id — compatibility payload keeps five extras', async () => {
+    const merchant = await request('GET', '/merchant', { headers: AUTH });
+    const firstOffer = Array.isArray(merchant.body?.itemOffers) ? merchant.body.itemOffers[0] : null;
+    const productId = firstOffer?.itemId;
+
+    assert('merchant returned an item id', typeof productId === 'string' && productId.length > 0);
+
+    const r = await request('GET', `/products/${productId}`, { headers: AUTH });
+    assert('status 200', r.status === 200);
+
+    const compositions = Array.isArray(r.body?.data?.compositions) ? r.body.data.compositions : [];
+    const extras = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'EXTRA');
+
+    assert('has at least five extras', extras.length >= 5, String(extras.length));
+    assert(
+      'all extras expose a numeric price payload',
+      extras.every((entry) => Number.isFinite(Number(entry?.product?.price))),
+    );
   });
 
   // ── orderUpdate ──────────────────────────────────────────────────────────

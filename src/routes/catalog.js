@@ -55,12 +55,27 @@ function toPriceNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+const MINIMUM_COMPLEMENTS_PER_PRODUCT = 5;
+
 function buildDefaultExtraProducts(productId) {
   return [
     { id: `${productId}-extra-queijo`, description: 'Queijo Extra', price: '2.50' },
     { id: `${productId}-extra-bacon`, description: 'Bacon Crocante', price: '3.90' },
     { id: `${productId}-extra-molho`, description: 'Molho Especial', price: '1.70' },
+    { id: `${productId}-extra-cebola`, description: 'Cebola Crispy', price: '2.20' },
+    { id: `${productId}-extra-picles`, description: 'Picles Extra', price: '1.30' },
+    { id: `${productId}-extra-tomate`, description: 'Tomate Fresco', price: '1.80' },
+    { id: `${productId}-extra-alface`, description: 'Alface Americana', price: '1.40' },
+    { id: `${productId}-extra-cheddar`, description: 'Molho Cheddar', price: '2.90' },
   ];
+}
+
+function normalizeExtraProduct(extraProduct, fallbackId) {
+  return {
+    id: normalizeText(extraProduct.id || fallbackId),
+    description: normalizeText(extraProduct.description) || 'Complemento',
+    price: toPriceNumber(extraProduct.price).toFixed(2),
+  };
 }
 
 function enrichProductComplements(product) {
@@ -80,20 +95,22 @@ function enrichProductComplements(product) {
       : {};
     const optionId = normalizeText(baseProduct.id || composition.id);
     if (!optionId) continue;
-    extraById.set(optionId, {
-      id: optionId,
-      description: normalizeText(baseProduct.description) || 'Complemento',
-      price: toPriceNumber(baseProduct.price).toFixed(2),
-    });
+    extraById.set(optionId, normalizeExtraProduct(baseProduct, optionId));
   }
 
   for (const fallbackExtra of defaults) {
     if (!extraById.has(fallbackExtra.id)) {
       extraById.set(fallbackExtra.id, fallbackExtra);
     }
+
+    if (extraById.size >= MINIMUM_COMPLEMENTS_PER_PRODUCT) {
+      break;
+    }
   }
 
-  const normalizedExtras = Array.from(extraById.values()).map((extra, index) => ({
+  const normalizedExtraEntries = Array.from(extraById.values()).slice(0, MINIMUM_COMPLEMENTS_PER_PRODUCT);
+
+  const normalizedExtras = normalizedExtraEntries.map((extra, index) => ({
     id: `comp-${product.id}-${index + 1}`,
     type: 'EXTRA',
     product: {
@@ -209,14 +226,18 @@ function buildOptionGroupsForProduct(product) {
         const extraProduct = entry.product && typeof entry.product === 'object'
           ? entry.product
           : {};
+        const normalizedExtra = normalizeExtraProduct(
+          extraProduct,
+          `${product.id}-extra-${index + 1}`
+        );
         return {
-          id: normalizeText(extraProduct.id || `${product.id}-extra-${index + 1}`),
+          id: normalizedExtra.id,
           index,
-          name: normalizeText(extraProduct.description) || 'Complemento',
-          description: normalizeText(extraProduct.description) || 'Complemento',
+          name: normalizedExtra.description,
+          description: normalizedExtra.description,
           status: 'AVAILABLE',
           price: {
-            value: toPriceNumber(extraProduct.price),
+            value: toPriceNumber(normalizedExtra.price),
             currency: 'BRL',
           },
         };

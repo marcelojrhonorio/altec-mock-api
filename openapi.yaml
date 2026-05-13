@@ -107,6 +107,8 @@ paths:
       description: |
         Endpoint principal para tela de categorias/produtos/customizacao.
         Retorna o payload Merchant com categories, itemOffers, items e optionGroups.
+        O mock garante que todo produto tenha um grupo de complementos com pelo menos 5 options.
+        Cada option retorna preco no padrao OpenDelivery (`price.value` + `price.currency`).
         Suporta ETag.
       operationId: getMerchant
       parameters:
@@ -401,6 +403,7 @@ components:
                     url: { type: string }
         optionGroups:
           type: array
+          description: Inclui um grupo `Complementos` por produto com no minimo 5 opcoes precificadas.
           items:
             type: object
             properties:
@@ -417,6 +420,7 @@ components:
                     name: { type: string }
                     price:
                       type: object
+                      description: Preco da opcao no padrao OpenDelivery.
                       properties:
                         value: { type: number }
                         currency: { type: string }

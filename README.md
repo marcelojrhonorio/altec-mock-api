@@ -39,7 +39,8 @@ No padrao OD, a customizacao e modelada por:
 Casos implementados no mock:
 - remover ingrediente (ex.: Sem Cebola)
 - adicionar ingrediente (ex.: Queijo Extra, Bacon Extra)
-- todo produto possui complementos fake por produto (multiplas opcoes)
+- todo produto possui pelo menos 5 complementos fake por produto
+- cada complemento no `GET /v1/merchant` retorna preco no padrao OpenDelivery (`price.value` + `price.currency`)
 
 ### 3) Sugestoes de acompanhamento
 OpenDelivery nao define endpoint especifico de sugestao contextual.
@@ -55,6 +56,7 @@ Retorno:
 Decisao de arquitetura:
 - total em tempo real durante montagem: calculado no frontend
 - fonte de preco/opcoes: `GET /v1/merchant`
+- mock atual: cada item do merchant expoe um grupo `Complementos` com no minimo 5 opcoes precificadas
 - total final do pedido: retornado por `GET /v1/orders/{orderId}`
 
 Obs.: nao foi criado endpoint custom de carrinho para manter aderencia ao OpenDelivery.
