@@ -55,6 +55,30 @@ function toPriceNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function buildItemPrice(value) {
+  const amount = toPriceNumber(value);
+  return {
+    value: amount,
+    originalValue: amount,
+    currency: 'BRL',
+  };
+}
+
+function buildServiceHours(timeRangeId) {
+  return {
+    id: `${timeRangeId}-hours`,
+    weekHours: [
+      {
+        dayOfWeek: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'],
+        timePeriods: {
+          startTime: '00:00:00.000Z',
+          endTime: '23:59:59.000Z',
+        },
+      },
+    ],
+  };
+}
+
 const MINIMUM_COMPLEMENTS_PER_PRODUCT = 15;
 
 function buildDefaultExtraProducts(productId) {
@@ -193,14 +217,13 @@ function buildOptionGroupsForProduct(product) {
           .filter((child) => normalizeText(child.id) && normalizeText(child.description))
           .map((child, index) => ({
             id: normalizeText(child.id),
+            itemId: normalizeText(child.id),
             index,
             name: normalizeText(child.description),
             description: normalizeText(child.description),
             status: 'AVAILABLE',
-            price: {
-              value: toPriceNumber(child.price),
-              currency: 'BRL',
-            },
+            maxPermitted: Number.isInteger(child.maxQuantity) ? child.maxQuantity : 1,
+            price: buildItemPrice(child.price),
           }))
       : [];
 
@@ -211,8 +234,11 @@ function buildOptionGroupsForProduct(product) {
       index: groups.length,
       name: normalizeText(combo.description) || 'Escolha uma opcao',
       description: normalizeText(combo.description) || 'Escolha uma opcao',
+      externalCode: normalizeText(combo.id) || `combo-${product.id}-${groups.length}`,
+      status: 'AVAILABLE',
       minPermitted: Number.isInteger(combo.minQuantity) ? combo.minQuantity : 0,
       maxPermitted: Number.isInteger(combo.maxQuantity) ? combo.maxQuantity : 1,
+      priceMethod: 'SUM',
       options,
     });
   }
@@ -227,8 +253,11 @@ function buildOptionGroupsForProduct(product) {
       index: groups.length,
       name: 'Complementos',
       description: 'Adicione complementos ao seu produto',
+      externalCode: `extras-${product.id}`,
+      status: 'AVAILABLE',
       minPermitted: 0,
       maxPermitted: extras.length,
+      priceMethod: 'SUM',
       options: extras.map((entry, index) => {
         const extraProduct = entry.product && typeof entry.product === 'object'
           ? entry.product
@@ -239,14 +268,13 @@ function buildOptionGroupsForProduct(product) {
         );
         return {
           id: normalizedExtra.id,
+          itemId: normalizedExtra.id,
           index,
           name: normalizedExtra.description,
           description: normalizedExtra.description,
           status: 'AVAILABLE',
-          price: {
-            value: toPriceNumber(normalizedExtra.price),
-            currency: 'BRL',
-          },
+          maxPermitted: 99,
+          price: buildItemPrice(normalizedExtra.price),
         };
       }),
     });
@@ -260,6 +288,9 @@ function buildMerchantOpenDelivery(catalog) {
   const itemOffers = [];
   const items = [];
   const optionGroups = [];
+  const optionItemsById = new Map();
+  const availabilityId = 'availability-all-day';
+  const menuId = 'menu-main';
 
   for (const category of catalog) {
     const offerIds = [];
@@ -271,18 +302,30 @@ function buildMerchantOpenDelivery(catalog) {
       const productOptionGroups = buildOptionGroupsForProduct(product);
       for (const group of productOptionGroups) {
         optionGroups.push(group);
+
+        for (const option of group.options || []) {
+          if (optionItemsById.has(option.itemId)) {
+            continue;
+          }
+
+          optionItemsById.set(option.itemId, {
+            id: option.itemId,
+            name: option.name,
+            description: option.description,
+            externalCode: option.itemId,
+            status: 'AVAILABLE',
+            unit: 'UN',
+          });
+        }
       }
 
       itemOffers.push({
         id: offerId,
         index: itemOffers.length,
         itemId: product.id,
-        active: true,
-        price: {
-          value: Number.parseFloat(product.price || 0) || 0,
-          currency: 'BRL',
-        },
-        availabilityId: ['all-day'],
+        status: 'AVAILABLE',
+        price: buildItemPrice(Number.parseFloat(product.price || 0) || 0),
+        availabilityId: [availabilityId],
         optionGroupsId: productOptionGroups.map((group) => group.id),
       });
 
@@ -290,8 +333,10 @@ function buildMerchantOpenDelivery(catalog) {
         id: product.id,
         name: product.name,
         description: product.description,
-        image: product.image_url ? [{ url: product.image_url }] : [],
         externalCode: product.id,
+        status: 'AVAILABLE',
+        unit: 'UN',
+        image: product.image_url ? { URL: product.image_url } : undefined,
       });
     }
 
@@ -300,11 +345,51 @@ function buildMerchantOpenDelivery(catalog) {
       name: category.description,
       description: category.description,
       index: categories.length,
+      externalCode: category.id,
+      status: 'AVAILABLE',
       itemOfferId: offerIds,
-      availabilityId: ['all-day'],
-      active: true,
+      availabilityId: [availabilityId],
     });
   }
+
+  for (const optionItem of optionItemsById.values()) {
+    items.push(optionItem);
+  }
+
+  const availabilities = [
+    {
+      id: availabilityId,
+      hours: [
+        {
+          dayOfWeek: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'],
+          timePeriods: {
+            startTime: '00:00:00.000Z',
+            endTime: '23:59:59.000Z',
+          },
+        },
+      ],
+    },
+  ];
+
+  const menus = [
+    {
+      id: menuId,
+      name: 'Cardapio Principal',
+      description: 'Cardapio principal do mock Altec',
+      externalCode: menuId,
+      categoryId: categories.map((category) => category.id),
+    },
+  ];
+
+  const services = [
+    {
+      id: 'service-delivery-main',
+      status: 'AVAILABLE',
+      serviceType: 'DELIVERY',
+      menuId,
+      serviceHours: buildServiceHours('service-delivery-main'),
+    },
+  ];
 
   return {
     lastUpdate: new Date().toISOString(),
@@ -313,17 +398,44 @@ function buildMerchantOpenDelivery(catalog) {
     status: 'AVAILABLE',
     basicInfo: {
       name: 'Altec Mock Merchant',
+      document: '00000000000000',
+      corporateName: 'Altec Mock Merchant LTDA',
+      description: 'Mock OpenDelivery para customizacao de produtos no totem.',
+      averageTicket: 40,
+      averagePreparationTime: 20,
+      minOrderValue: {
+        value: 0,
+        currency: 'BRL',
+      },
+      merchantType: 'RESTAURANT',
+      address: {
+        country: 'BR',
+        state: 'BR-SP',
+        city: 'Sao Paulo',
+        district: 'Centro',
+        street: 'Rua Exemplo',
+        number: '100',
+        postalCode: '01001000',
+        complement: 'Loja 1',
+        reference: 'Mock API',
+        latitude: -23.5505,
+        longitude: -46.6333,
+      },
+      contactEmails: ['mock@altec.local'],
+      contactPhones: {
+        commercialNumber: '11999999999',
+      },
+      logoImage: {
+        URL: 'https://example.com/altec-logo.png',
+      },
     },
+    services,
+    menus,
     categories,
     itemOffers,
     items,
     optionGroups,
-    availabilities: [
-      {
-        id: 'all-day',
-        description: 'Always available',
-      },
-    ],
+    availabilities,
   };
 }
 

@@ -375,6 +375,73 @@ async function runAll() {
     assert('has itemOffers array', Array.isArray(r.body?.itemOffers));
     assert('has items array', Array.isArray(r.body?.items));
     assert('has optionGroups array', Array.isArray(r.body?.optionGroups));
+    assert('has services array', Array.isArray(r.body?.services));
+    assert('has menus array', Array.isArray(r.body?.menus));
+  });
+
+  await test('GET /merchant — OpenDelivery structural fields for customization entities', async () => {
+    const r = await request('GET', '/merchant', { headers: AUTH });
+    assert('status 200', r.status === 200);
+
+    const categories = Array.isArray(r.body?.categories) ? r.body.categories : [];
+    const itemOffers = Array.isArray(r.body?.itemOffers) ? r.body.itemOffers : [];
+    const optionGroups = Array.isArray(r.body?.optionGroups) ? r.body.optionGroups : [];
+
+    const invalidCategories = categories.filter((category) => (
+      !category?.id ||
+      !Number.isInteger(category?.index) ||
+      !category?.name ||
+      !category?.externalCode ||
+      !['AVAILABLE', 'UNAVAILABLE'].includes(String(category?.status))
+    ));
+
+    const invalidItemOffers = itemOffers.filter((offer) => {
+      const price = offer?.price;
+      return (
+        !offer?.id ||
+        !offer?.itemId ||
+        !Number.isInteger(offer?.index) ||
+        !['AVAILABLE', 'UNAVAILABLE'].includes(String(offer?.status)) ||
+        typeof price?.value !== 'number' ||
+        typeof price?.originalValue !== 'number' ||
+        price?.currency !== 'BRL'
+      );
+    });
+
+    const invalidOptionGroups = optionGroups.filter((group) => (
+      !group?.id ||
+      !Number.isInteger(group?.index) ||
+      !group?.name ||
+      !group?.externalCode ||
+      !['AVAILABLE', 'UNAVAILABLE'].includes(String(group?.status)) ||
+      !Number.isInteger(group?.minPermitted) ||
+      !Number.isInteger(group?.maxPermitted)
+    ));
+
+    const invalidOptions = [];
+    for (const group of optionGroups) {
+      const options = Array.isArray(group?.options) ? group.options : [];
+      for (const option of options) {
+        const price = option?.price;
+        const isValid = (
+          !!option?.id &&
+          !!option?.itemId &&
+          Number.isInteger(option?.index) &&
+          ['AVAILABLE', 'UNAVAILABLE'].includes(String(option?.status)) &&
+          typeof price?.value === 'number' &&
+          typeof price?.originalValue === 'number' &&
+          price?.currency === 'BRL'
+        );
+        if (!isValid) {
+          invalidOptions.push(`${group?.id || 'unknown-group'}:${option?.id || 'unknown-option'}`);
+        }
+      }
+    }
+
+    assert('all categories include required OD fields', invalidCategories.length === 0, JSON.stringify(invalidCategories.slice(0, 3)));
+    assert('all itemOffers include required OD fields', invalidItemOffers.length === 0, JSON.stringify(invalidItemOffers.slice(0, 3)));
+    assert('all optionGroups include required OD fields', invalidOptionGroups.length === 0, JSON.stringify(invalidOptionGroups.slice(0, 3)));
+    assert('all options include required OD fields', invalidOptions.length === 0, invalidOptions.slice(0, 5).join(','));
   });
 
   await test('GET /merchant — every product has complements mapped', async () => {
@@ -433,13 +500,8 @@ async function runAll() {
         continue;
       }
 
-      if (complementsCount < 5) {
+      if (complementsCount < 15) {
         offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-complements:${complementsCount}`);
-        continue;
-      }
-
-      if (totalOptions < 5) {
-        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-options-total:${totalOptions}`);
         continue;
       }
 
@@ -450,7 +512,7 @@ async function runAll() {
 
     assert('no offer without optionGroupsId', offersWithoutGroups.length === 0, offersWithoutGroups.join(','));
     assert(
-      'all products expose at least five complements with OpenDelivery pricing',
+      'all products expose at least fifteen complements with OpenDelivery pricing',
       offersWithInvalidComplements.length === 0,
       offersWithInvalidComplements.join(','),
     );
