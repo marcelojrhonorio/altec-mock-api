@@ -55,7 +55,7 @@ function toPriceNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-const MINIMUM_COMPLEMENTS_PER_PRODUCT = 5;
+const MINIMUM_COMPLEMENTS_PER_PRODUCT = 15;
 
 function buildDefaultExtraProducts(productId) {
   return [
@@ -67,6 +67,13 @@ function buildDefaultExtraProducts(productId) {
     { id: `${productId}-extra-tomate`, description: 'Tomate Fresco', price: '1.80' },
     { id: `${productId}-extra-alface`, description: 'Alface Americana', price: '1.40' },
     { id: `${productId}-extra-cheddar`, description: 'Molho Cheddar', price: '2.90' },
+    { id: `${productId}-extra-maionese`, description: 'Maionese Especial', price: '2.00' },
+    { id: `${productId}-extra-pepperoni`, description: 'Pepperoni', price: '4.50' },
+    { id: `${productId}-extra-ovo`, description: 'Ovo Estrelado', price: '3.20' },
+    { id: `${productId}-extra-guacamole`, description: 'Guacamole', price: '3.80' },
+    { id: `${productId}-extra-ketchup`, description: 'Ketchup Artesanal', price: '1.50' },
+    { id: `${productId}-extra-mostarda`, description: 'Mostarda Dijon', price: '1.60' },
+    { id: `${productId}-extra-paodealho`, description: 'Pão de Alho', price: '2.80' },
   ];
 }
 
