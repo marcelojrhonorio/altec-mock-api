@@ -464,6 +464,7 @@ async function runAll() {
       let hasComplementsGroup = false;
       let complementsCount = 0;
       let hasInvalidPrice = false;
+      let hasZeroPricedComplement = false;
 
       for (const groupId of groupIds) {
         const group = optionGroupsById.get(groupId);
@@ -488,9 +489,16 @@ async function runAll() {
             hasInvalidPrice = true;
             break;
           }
+          if (
+            String(group?.name || '').toLowerCase() === 'complementos' &&
+            price.value <= 0
+          ) {
+            hasZeroPricedComplement = true;
+            break;
+          }
         }
 
-        if (hasInvalidPrice) {
+        if (hasInvalidPrice || hasZeroPricedComplement) {
           break;
         }
       }
@@ -507,6 +515,11 @@ async function runAll() {
 
       if (hasInvalidPrice) {
         offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:invalid-price`);
+        continue;
+      }
+
+      if (hasZeroPricedComplement) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:zero-priced-complement`);
       }
     }
 
