@@ -368,6 +368,117 @@ async function runAll() {
     assert('status 401', r.status === 401);
   });
 
+  await test('GET /catalog — every product has EXTRA and WITHOUT customizations', async () => {
+    const r = await request('GET', '/catalog', { headers: AUTH });
+    assert('status 200', r.status === 200);
+
+    const categories = Array.isArray(r.body) ? r.body : [];
+    const invalidProducts = [];
+
+    for (const category of categories) {
+      const products = Array.isArray(category?.products) ? category.products : [];
+      for (const product of products) {
+        const compositions = Array.isArray(product?.compositions) ? product.compositions : [];
+        const extra = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'EXTRA');
+        const without = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'WITHOUT');
+
+        const hasValidExtraPrice = extra.every((entry) => Number.isFinite(Number(entry?.product?.price)) && Number(entry?.product?.price) > 0);
+        const hasValidWithoutPrice = without.every((entry) => Number(entry?.product?.price) === 0);
+
+        if (extra.length < 15) {
+          invalidProducts.push(`${product?.id || 'unknown'}:few-extra:${extra.length}`);
+          continue;
+        }
+
+        if (without.length < 4) {
+          invalidProducts.push(`${product?.id || 'unknown'}:few-without:${without.length}`);
+          continue;
+        }
+
+        if (!hasValidExtraPrice) {
+          invalidProducts.push(`${product?.id || 'unknown'}:invalid-extra-price`);
+          continue;
+        }
+
+        if (!hasValidWithoutPrice) {
+          invalidProducts.push(`${product?.id || 'unknown'}:invalid-without-price`);
+        }
+      }
+    }
+
+    assert('all catalog products include valid EXTRA and WITHOUT customizations', invalidProducts.length === 0, invalidProducts.slice(0, 8).join(','));
+  });
+
+  await test('GET /merchant, /catalog and /products/:id — customization consistency', async () => {
+    const merchant = await request('GET', '/merchant', { headers: AUTH });
+    const catalog = await request('GET', '/catalog', { headers: AUTH });
+
+    assert('merchant status 200', merchant.status === 200);
+    assert('catalog status 200', catalog.status === 200);
+
+    const merchantOffers = Array.isArray(merchant.body?.itemOffers) ? merchant.body.itemOffers : [];
+    const merchantGroups = Array.isArray(merchant.body?.optionGroups) ? merchant.body.optionGroups : [];
+    const groupsById = new Map(merchantGroups.map((group) => [group.id, group]));
+
+    const catalogProductsById = new Map();
+    for (const category of Array.isArray(catalog.body) ? catalog.body : []) {
+      for (const product of Array.isArray(category?.products) ? category.products : []) {
+        catalogProductsById.set(product.id, product);
+      }
+    }
+
+    const mismatches = [];
+
+    for (const offer of merchantOffers) {
+      const product = catalogProductsById.get(offer?.itemId);
+      if (!product) {
+        mismatches.push(`${offer?.itemId || 'unknown'}:missing-in-catalog`);
+        continue;
+      }
+
+      const compositions = Array.isArray(product?.compositions) ? product.compositions : [];
+      const extraCount = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'EXTRA').length;
+      const withoutCount = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'WITHOUT').length;
+
+      const groupIds = Array.isArray(offer?.optionGroupsId) ? offer.optionGroupsId : [];
+      const complementsGroup = groupIds.map((id) => groupsById.get(id)).find((group) => String(group?.name || '').toLowerCase() === 'complementos');
+      const withoutGroup = groupIds.map((id) => groupsById.get(id)).find((group) => String(group?.name || '').toLowerCase() === 'remocoes');
+
+      if (!complementsGroup || !withoutGroup) {
+        mismatches.push(`${offer?.itemId || 'unknown'}:missing-group-mapping`);
+        continue;
+      }
+
+      if ((complementsGroup.options || []).length !== extraCount) {
+        mismatches.push(`${offer?.itemId || 'unknown'}:extras-mismatch`);
+        continue;
+      }
+
+      if ((withoutGroup.options || []).length !== withoutCount) {
+        mismatches.push(`${offer?.itemId || 'unknown'}:without-mismatch`);
+        continue;
+      }
+    }
+
+    const firstOffer = merchantOffers[0];
+    assert('merchant has at least one offer', !!firstOffer);
+    const singleProduct = await request('GET', `/products/${firstOffer?.itemId}`, { headers: AUTH });
+    assert('products/:id status 200', singleProduct.status === 200);
+
+    const productFromCatalog = catalogProductsById.get(firstOffer?.itemId);
+    const productFromEndpoint = singleProduct.body?.data;
+
+    if (productFromCatalog && productFromEndpoint) {
+      const endpointCompositions = Array.isArray(productFromEndpoint.compositions) ? productFromEndpoint.compositions.length : 0;
+      const catalogCompositions = Array.isArray(productFromCatalog.compositions) ? productFromCatalog.compositions.length : 0;
+      if (endpointCompositions !== catalogCompositions) {
+        mismatches.push(`${firstOffer?.itemId || 'unknown'}:products-endpoint-mismatch`);
+      }
+    }
+
+    assert('customization data is consistent across merchant/catalog/products endpoints', mismatches.length === 0, mismatches.slice(0, 8).join(','));
+  });
+
   await test('GET /merchant — 200 with OpenDelivery essentials', async () => {
     const r = await request('GET', '/merchant', { headers: AUTH });
     assert('status 200', r.status === 200);
@@ -463,8 +574,11 @@ async function runAll() {
       let totalOptions = 0;
       let hasComplementsGroup = false;
       let complementsCount = 0;
+      let hasWithoutGroup = false;
+      let withoutCount = 0;
       let hasInvalidPrice = false;
       let hasZeroPricedComplement = false;
+      let hasPaidWithoutOption = false;
 
       for (const groupId of groupIds) {
         const group = optionGroupsById.get(groupId);
@@ -479,6 +593,11 @@ async function runAll() {
         if (String(group?.name || '').toLowerCase() === 'complementos') {
           hasComplementsGroup = true;
           complementsCount = options.length;
+        }
+
+        if (String(group?.name || '').toLowerCase() === 'remocoes') {
+          hasWithoutGroup = true;
+          withoutCount = options.length;
         }
 
         for (const option of options) {
@@ -496,9 +615,17 @@ async function runAll() {
             hasZeroPricedComplement = true;
             break;
           }
+
+          if (
+            String(group?.name || '').toLowerCase() === 'remocoes' &&
+            price.value > 0
+          ) {
+            hasPaidWithoutOption = true;
+            break;
+          }
         }
 
-        if (hasInvalidPrice || hasZeroPricedComplement) {
+        if (hasInvalidPrice || hasZeroPricedComplement || hasPaidWithoutOption) {
           break;
         }
       }
@@ -508,8 +635,18 @@ async function runAll() {
         continue;
       }
 
+      if (!hasWithoutGroup) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:missing-without-group`);
+        continue;
+      }
+
       if (complementsCount < 15) {
         offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-complements:${complementsCount}`);
+        continue;
+      }
+
+      if (withoutCount < 4) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:few-without-options:${withoutCount}`);
         continue;
       }
 
@@ -520,6 +657,11 @@ async function runAll() {
 
       if (hasZeroPricedComplement) {
         offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:zero-priced-complement`);
+        continue;
+      }
+
+      if (hasPaidWithoutOption) {
+        offersWithInvalidComplements.push(`${offer?.itemId || 'unknown'}:paid-without-option`);
       }
     }
 
@@ -531,7 +673,7 @@ async function runAll() {
     );
   });
 
-  await test('GET /products/:id — compatibility payload keeps five extras', async () => {
+  await test('GET /products/:id — compatibility payload keeps extras and removals', async () => {
     const merchant = await request('GET', '/merchant', { headers: AUTH });
     const firstOffer = Array.isArray(merchant.body?.itemOffers) ? merchant.body.itemOffers[0] : null;
     const productId = firstOffer?.itemId;
@@ -543,11 +685,17 @@ async function runAll() {
 
     const compositions = Array.isArray(r.body?.data?.compositions) ? r.body.data.compositions : [];
     const extras = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'EXTRA');
+    const without = compositions.filter((entry) => String(entry?.type || '').toUpperCase() === 'WITHOUT');
 
     assert('has at least five extras', extras.length >= 5, String(extras.length));
+    assert('has at least four removal options', without.length >= 4, String(without.length));
     assert(
       'all extras expose a numeric price payload',
       extras.every((entry) => Number.isFinite(Number(entry?.product?.price))),
+    );
+    assert(
+      'all removal options are zero-priced',
+      without.every((entry) => Number(entry?.product?.price) === 0),
     );
   });
 

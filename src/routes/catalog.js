@@ -44,7 +44,7 @@ function normalizeCatalogData(catalog) {
   return catalog.map((category) => ({
     ...category,
     products: (category.products || []).map((product) =>
-      enrichProductComplements(normalizeProduct(product, category))
+      enrichProductComplements(normalizeProduct(product, category), category)
     ),
   }));
 }
@@ -80,8 +80,18 @@ function buildServiceHours(timeRangeId) {
 }
 
 const MINIMUM_COMPLEMENTS_PER_PRODUCT = 15;
+const MINIMUM_WITHOUT_OPTIONS_PER_PRODUCT = 4;
 
-function buildDefaultExtraProducts(productId) {
+function getCategoryCustomizationProfile(category) {
+  const description = normalizeText(category && category.description).toLowerCase();
+
+  if (description.includes('bebida')) return 'DRINK';
+  if (description.includes('acompanhamento')) return 'SIDE';
+  if (description.includes('sobremesa')) return 'DESSERT';
+  return 'SANDWICH';
+}
+
+function buildUniversalExtraProducts(productId) {
   return [
     { id: `${productId}-extra-queijo`, description: 'Queijo Extra', price: '2.50' },
     { id: `${productId}-extra-bacon`, description: 'Bacon Crocante', price: '3.90' },
@@ -101,6 +111,97 @@ function buildDefaultExtraProducts(productId) {
   ];
 }
 
+function buildCategoryExtraProducts(productId, profile) {
+  if (profile === 'DRINK') {
+    return [
+      { id: `${productId}-extra-limao`, description: 'Limao Extra', price: '1.20' },
+      { id: `${productId}-extra-gelo`, description: 'Gelo Extra', price: '0.80' },
+      { id: `${productId}-extra-xarope`, description: 'Xarope Extra', price: '2.10' },
+    ];
+  }
+
+  if (profile === 'SIDE') {
+    return [
+      { id: `${productId}-extra-molho-barbecue`, description: 'Molho Barbecue', price: '1.90' },
+      { id: `${productId}-extra-molho-alho`, description: 'Molho de Alho', price: '1.60' },
+      { id: `${productId}-extra-parmesao`, description: 'Parmesao Ralado', price: '1.70' },
+    ];
+  }
+
+  if (profile === 'DESSERT') {
+    return [
+      { id: `${productId}-extra-granulado`, description: 'Granulado', price: '1.30' },
+      { id: `${productId}-extra-calda`, description: 'Calda Extra', price: '1.90' },
+      { id: `${productId}-extra-frutas`, description: 'Frutas Frescas', price: '2.30' },
+    ];
+  }
+
+  return [
+    { id: `${productId}-extra-cebola-roxa`, description: 'Cebola Roxa', price: '1.70' },
+    { id: `${productId}-extra-tomate-seco`, description: 'Tomate Seco', price: '2.40' },
+    { id: `${productId}-extra-pao-artesanal`, description: 'Pao Artesanal', price: '2.90' },
+  ];
+}
+
+function buildDefaultExtraProducts(productId, profile) {
+  return [
+    ...buildCategoryExtraProducts(productId, profile),
+    ...buildUniversalExtraProducts(productId),
+  ];
+}
+
+function buildUniversalWithoutProducts(productId) {
+  return [
+    { id: `${productId}-without-cebola`, description: 'Sem cebola', price: '0.00' },
+    { id: `${productId}-without-picles`, description: 'Sem picles', price: '0.00' },
+    { id: `${productId}-without-molho`, description: 'Sem molho especial', price: '0.00' },
+    { id: `${productId}-without-alface`, description: 'Sem alface', price: '0.00' },
+  ];
+}
+
+function buildCategoryWithoutProducts(productId, profile) {
+  if (profile === 'DRINK') {
+    return [
+      { id: `${productId}-without-gelo`, description: 'Sem gelo', price: '0.00' },
+      { id: `${productId}-without-acucar`, description: 'Sem acucar', price: '0.00' },
+      { id: `${productId}-without-limao`, description: 'Sem limao', price: '0.00' },
+      { id: `${productId}-without-xarope`, description: 'Sem xarope', price: '0.00' },
+    ];
+  }
+
+  if (profile === 'SIDE') {
+    return [
+      { id: `${productId}-without-sal`, description: 'Sem sal', price: '0.00' },
+      { id: `${productId}-without-molho`, description: 'Sem molho', price: '0.00' },
+      { id: `${productId}-without-queijo`, description: 'Sem queijo', price: '0.00' },
+      { id: `${productId}-without-pimenta`, description: 'Sem pimenta', price: '0.00' },
+    ];
+  }
+
+  if (profile === 'DESSERT') {
+    return [
+      { id: `${productId}-without-calda`, description: 'Sem calda', price: '0.00' },
+      { id: `${productId}-without-granulado`, description: 'Sem granulado', price: '0.00' },
+      { id: `${productId}-without-cobertura`, description: 'Sem cobertura', price: '0.00' },
+      { id: `${productId}-without-frutas`, description: 'Sem frutas', price: '0.00' },
+    ];
+  }
+
+  return [
+    { id: `${productId}-without-cebola`, description: 'Sem cebola', price: '0.00' },
+    { id: `${productId}-without-picles`, description: 'Sem picles', price: '0.00' },
+    { id: `${productId}-without-molho`, description: 'Sem molho especial', price: '0.00' },
+    { id: `${productId}-without-alface`, description: 'Sem alface', price: '0.00' },
+  ];
+}
+
+function buildDefaultWithoutProducts(productId, profile) {
+  return [
+    ...buildCategoryWithoutProducts(productId, profile),
+    ...buildUniversalWithoutProducts(productId),
+  ];
+}
+
 function normalizeExtraProduct(extraProduct, fallbackId) {
   return {
     id: normalizeText(extraProduct.id || fallbackId),
@@ -109,16 +210,35 @@ function normalizeExtraProduct(extraProduct, fallbackId) {
   };
 }
 
-function enrichProductComplements(product) {
+function normalizeWithoutProduct(withoutProduct, fallbackId) {
+  const description = normalizeText(withoutProduct.description) || 'Sem ingrediente';
+  const normalizedDescription = description.toLowerCase().startsWith('sem ')
+    ? description
+    : `Sem ${description}`;
+
+  return {
+    id: normalizeText(withoutProduct.id || fallbackId),
+    description: normalizedDescription,
+    price: '0.00',
+  };
+}
+
+function enrichProductComplements(product, category) {
+  const profile = getCategoryCustomizationProfile(category);
   const existingCompositions = Array.isArray(product.compositions)
     ? product.compositions.map((entry) => ({ ...entry }))
     : [];
   const existingExtras = existingCompositions.filter(
     (entry) => normalizeText(entry.type).toUpperCase() === 'EXTRA'
   );
+  const existingWithout = existingCompositions.filter(
+    (entry) => normalizeText(entry.type).toUpperCase() === 'WITHOUT'
+  );
 
-  const defaults = buildDefaultExtraProducts(product.id);
+  const defaults = buildDefaultExtraProducts(product.id, profile);
+  const defaultWithout = buildDefaultWithoutProducts(product.id, profile);
   const extraById = new Map();
+  const withoutById = new Map();
 
   for (const composition of existingExtras) {
     const baseProduct = composition.product && typeof composition.product === 'object'
@@ -127,6 +247,15 @@ function enrichProductComplements(product) {
     const optionId = normalizeText(baseProduct.id || composition.id);
     if (!optionId) continue;
     extraById.set(optionId, normalizeExtraProduct(baseProduct, optionId));
+  }
+
+  for (const composition of existingWithout) {
+    const baseProduct = composition.product && typeof composition.product === 'object'
+      ? composition.product
+      : {};
+    const optionId = normalizeText(baseProduct.id || composition.id);
+    if (!optionId) continue;
+    withoutById.set(optionId, normalizeWithoutProduct(baseProduct, optionId));
   }
 
   for (const fallbackExtra of defaults) {
@@ -140,6 +269,17 @@ function enrichProductComplements(product) {
   }
 
   const normalizedExtraEntries = Array.from(extraById.values()).slice(0, MINIMUM_COMPLEMENTS_PER_PRODUCT);
+  for (const fallbackWithout of defaultWithout) {
+    if (!withoutById.has(fallbackWithout.id)) {
+      withoutById.set(fallbackWithout.id, fallbackWithout);
+    }
+
+    if (withoutById.size >= MINIMUM_WITHOUT_OPTIONS_PER_PRODUCT) {
+      break;
+    }
+  }
+
+  const normalizedWithoutEntries = Array.from(withoutById.values()).slice(0, MINIMUM_WITHOUT_OPTIONS_PER_PRODUCT);
 
   const normalizedExtras = normalizedExtraEntries.map((extra, index) => ({
     id: `comp-${product.id}-${index + 1}`,
@@ -148,6 +288,20 @@ function enrichProductComplements(product) {
       id: extra.id,
       description: extra.description,
       price: extra.price,
+      image_url: product.image_url,
+      image_crc32: null,
+      compositions: [],
+      combinations: [],
+    },
+  }));
+
+  const normalizedWithout = normalizedWithoutEntries.map((without, index) => ({
+    id: `without-${product.id}-${index + 1}`,
+    type: 'WITHOUT',
+    product: {
+      id: without.id,
+      description: without.description,
+      price: without.price,
       image_url: product.image_url,
       image_crc32: null,
       compositions: [],
@@ -203,7 +357,7 @@ function enrichProductComplements(product) {
 
   return {
     ...product,
-    compositions: normalizedExtras,
+    compositions: [...normalizedWithout, ...normalizedExtras],
     combinations,
   };
 }
@@ -246,6 +400,43 @@ function buildOptionGroupsForProduct(product) {
   const extras = (product.compositions || []).filter(
     (entry) => normalizeText(entry.type).toUpperCase() === 'EXTRA'
   );
+  const without = (product.compositions || []).filter(
+    (entry) => normalizeText(entry.type).toUpperCase() === 'WITHOUT'
+  );
+
+  if (without.length > 0) {
+    groups.push({
+      id: `without-${product.id}`,
+      index: groups.length,
+      name: 'Remocoes',
+      description: 'Remova ingredientes do seu produto',
+      externalCode: `without-${product.id}`,
+      status: 'AVAILABLE',
+      minPermitted: 0,
+      maxPermitted: without.length,
+      priceMethod: 'SUM',
+      options: without.map((entry, index) => {
+        const withoutProduct = entry.product && typeof entry.product === 'object'
+          ? entry.product
+          : {};
+        const normalizedWithout = normalizeWithoutProduct(
+          withoutProduct,
+          `${product.id}-without-${index + 1}`
+        );
+
+        return {
+          id: normalizedWithout.id,
+          itemId: normalizedWithout.id,
+          index,
+          name: normalizedWithout.description,
+          description: normalizedWithout.description,
+          status: 'AVAILABLE',
+          maxPermitted: 1,
+          price: buildItemPrice(0),
+        };
+      }),
+    });
+  }
 
   if (extras.length > 0) {
     groups.push({

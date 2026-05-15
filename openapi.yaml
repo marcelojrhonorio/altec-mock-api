@@ -5,7 +5,7 @@ info:
     API REST mockada para o módulo Totem (Autoatendimento) do Riser 3.
     Implementa endpoints de configuração, bootstrap e fluxo de catálogo/pedido
     aderente ao OpenDelivery para uso em ambiente de desenvolvimento.
-  version: 1.3.0
+  version: 1.4.0
   contact:
     name: Altec / K9 Tecnologia
     url: https://www.altec.ws
@@ -24,7 +24,6 @@ tags:
   - name: Catalogo
   - name: Pedidos
   - name: WebSocket
-  - name: Legacy
 
 paths:
   /tenants/{tenantId}/establishments/{establishmentId}/kiosks/{kioskId}/config:
@@ -107,8 +106,11 @@ paths:
       description: |
         Endpoint principal para tela de categorias/produtos/customizacao.
         Retorna o payload Merchant com categories, itemOffers, items e optionGroups.
-        O mock garante que todo produto tenha um grupo de complementos com pelo menos 5 options.
-        Cada option retorna preco no padrao OpenDelivery (`price.value` + `price.currency`).
+        O mock garante fallback automatico para todos os produtos com dois grupos:
+        - `Remocoes` (opcoes WITHOUT) com preco zero
+        - `Complementos` (opcoes EXTRA) com preco positivo
+        Cada produto possui no minimo 4 opcoes de remocao e 15 opcoes de complemento.
+        Cada option retorna preco no padrao OpenDelivery (`price.value`, `price.originalValue`, `price.currency`).
         Suporta ETag.
       operationId: getMerchant
       parameters:
@@ -133,34 +135,70 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
-  /catalog/items/{itemId}/suggestions:
+  /catalog:
     get:
       tags: [Catalogo]
-      summary: Sugestoes de acompanhamento por item (extensao custom)
+      summary: Obter catalogo normalizado (compatibilidade)
       description: |
-        Endpoint custom para UI de sugestões.
-        Recebe itemId e retorna itemOffers sugeridos com opcões de customização.
-      operationId: getItemSuggestions
+        Retorna categorias/produtos no modelo de compatibilidade do projeto,
+        com enrich de customizacao por produto em `compositions`:
+        - `WITHOUT` (remocoes sem custo)
+        - `EXTRA` (adicionais com custo)
+      operationId: getCatalog
       parameters:
-        - name: itemId
+        - name: If-None-Match
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Catalogo normalizado
+          headers:
+            ETag:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CatalogCategory'
+        '304':
+          description: Not Modified
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /products/{id}:
+    get:
+      tags: [Catalogo]
+      summary: Obter produto por id (compatibilidade)
+      operationId: getProductById
+      parameters:
+        - name: id
           in: path
           required: true
           schema: { type: string }
       responses:
         '200':
-          description: Sugestoes retornadas
+          description: Produto encontrado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuggestionResponse'
+                $ref: '#/components/schemas/ProductByIdResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-  /newEvent:
+  /orderUpdate:
     post:
       tags: [Pedidos]
-      summary: Receber novo evento de pedido (OpenDelivery webhook)
-      operationId: postNewEvent
+      summary: Receber novo evento de pedido
+      description: |
+        Endpoint de entrada de evento de pedido no mock.
+        Aceita apenas `eventType = CREATED` e exige `metadata.order` completo.
+      operationId: postOrderUpdate
       requestBody:
         required: true
         content:
@@ -206,54 +244,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /orders/{orderId}/details:
-    patch:
-      tags: [Pedidos]
-      summary: Atualizar detalhes permitidos do pedido
-      description: |
-        Atualiza apenas campos não relacionados a status.
-        Campos permitidos neste mock: preparationStartDateTime e extraInfo.
-      operationId: patchOrderDetails
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              properties:
-                preparationStartDateTime:
-                  type: string
-                  format: date-time
-                extraInfo:
-                  type: string
-      responses:
-        '200':
-          description: Pedido atualizado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, example: UPDATED }
-                  orderId: { type: string }
-                  updatedFields:
-                    type: array
-                    items: { type: string }
-                  order:
-                    $ref: '#/components/schemas/Order'
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-
   /ws/emit:
     post:
       tags: [WebSocket]
@@ -282,24 +272,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '422':
           $ref: '#/components/responses/ValidationError'
-
-  /catalog:
-    get:
-      tags: [Legacy]
-      summary: Legado descontinuado
-      deprecated: true
-      responses:
-        '410':
-          $ref: '#/components/responses/GoneError'
-
-  /orderUpdate:
-    post:
-      tags: [Legacy]
-      summary: Legado descontinuado
-      deprecated: true
-      responses:
-        '410':
-          $ref: '#/components/responses/GoneError'
 
 components:
   securitySchemes:
@@ -396,14 +368,13 @@ components:
               name: { type: string }
               description: { type: string }
               image:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    url: { type: string }
+                type: object
+                nullable: true
+                properties:
+                  URL: { type: string }
         optionGroups:
           type: array
-          description: Inclui um grupo `Complementos` por produto com no minimo 5 opcoes precificadas.
+          description: Inclui grupos `Remocoes` (WITHOUT) e `Complementos` (EXTRA) por produto.
           items:
             type: object
             properties:
@@ -417,32 +388,66 @@ components:
                   type: object
                   properties:
                     id: { type: string }
+                    itemId: { type: string }
                     name: { type: string }
                     price:
                       type: object
                       description: Preco da opcao no padrao OpenDelivery.
                       properties:
                         value: { type: number }
+                        originalValue: { type: number }
                         currency: { type: string }
         availabilities:
           type: array
           items: { type: object }
 
-    SuggestionResponse:
+    CatalogCategory:
       type: object
       properties:
-        itemId: { type: string }
-        suggestions:
+        id: { type: string }
+        description: { type: string }
+        image_url: { type: string }
+        image_crc32: { type: string, nullable: true }
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogProduct'
+
+    CatalogProduct:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        price: { type: string }
+        image_url: { type: string, nullable: true }
+        compositions:
           type: array
           items:
             type: object
             properties:
-              itemOfferId: { type: string }
-              item: { type: object }
-              price: { type: object }
-              optionGroups:
-                type: array
-                items: { type: object }
+              id: { type: string }
+              type: { type: string, enum: [EXTRA, WITHOUT] }
+              product:
+                type: object
+                properties:
+                  id: { type: string }
+                  description: { type: string }
+                  price: { type: string }
+        combinations:
+          type: array
+          items: { type: object }
+
+    ProductByIdResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          allOf:
+            - $ref: '#/components/schemas/CatalogProduct'
+            - type: object
+              properties:
+                categoryId: { type: string }
 
     OrderEvent:
       type: object
@@ -520,12 +525,6 @@ components:
             $ref: '#/components/schemas/Error'
     ValidationError:
       description: Campos obrigatorios faltando ou invalidos
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    GoneError:
-      description: Endpoint descontinuado
       content:
         application/json:
           schema:

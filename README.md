@@ -1,6 +1,6 @@
 # Altec Totem Mock API
 
-Mock API para o fluxo de totem, com foco no catalogo/pedido aderente ao OpenDelivery.
+Mock API para o fluxo de totem, com foco em catalogo/pedido aderente ao OpenDelivery.
 
 ## Stack
 - Bun
@@ -20,7 +20,7 @@ Auth padrao:
 Authorization: ApiKey ksk_mock_altec_001
 ```
 
-## Escopo implementado (OpenDelivery + extensao)
+## Escopo implementado (OpenDelivery + compatibilidade)
 
 ### 1) Tela inicial: categorias e produtos por categoria
 Endpoint principal:
@@ -37,31 +37,25 @@ No padrao OD, a customizacao e modelada por:
 - `optionGroups[].options[]`
 
 Casos implementados no mock:
-- remover ingrediente (ex.: Sem Cebola)
-- adicionar ingrediente (ex.: Queijo Extra, Bacon Extra)
-- todo produto possui pelo menos 5 complementos fake por produto
-- cada complemento no `GET /v1/merchant` retorna preco no padrao OpenDelivery (`price.value` + `price.currency`)
+- remover ingrediente (ex.: Sem cebola) via grupo `Remocoes`
+- adicionar ingrediente (ex.: Queijo Extra, Bacon Extra) via grupo `Complementos`
+- todo produto possui fallback automatico de customizacao em todos os endpoints de catalogo
+- cada produto possui no minimo:
+	- 4 opcoes de remocao (`WITHOUT`) com preco zero
+	- 15 opcoes de adicional (`EXTRA`) com preco positivo
+- customizacao com variacao semantica por categoria (ex.: bebidas priorizam sem gelo/sem acucar)
+- cada option no `GET /v1/merchant` retorna preco no padrao OpenDelivery (`price.value`, `price.originalValue`, `price.currency`)
 
-### 3) Sugestoes de acompanhamento
-OpenDelivery nao define endpoint especifico de sugestao contextual.
-Foi implementada extensao custom:
-- `GET /v1/catalog/items/{itemId}/suggestions`
-
-Retorno:
-- lista de itemOffers sugeridos
-- dados do item sugerido
-- optionGroups para customizacao do item sugerido (ex.: refrigerante com/sem gelo)
-
-### 4) Atualizacao de total do pedido
+### 3) Atualizacao de total do pedido
 Decisao de arquitetura:
 - total em tempo real durante montagem: calculado no frontend
 - fonte de preco/opcoes: `GET /v1/merchant`
-- mock atual: cada item do merchant expoe um grupo `Complementos` com no minimo 5 opcoes precificadas
+- mock atual: cada item do merchant expoe os grupos `Remocoes` e `Complementos`
 - total final do pedido: retornado por `GET /v1/orders/{orderId}`
 
 Obs.: nao foi criado endpoint custom de carrinho para manter aderencia ao OpenDelivery.
 
-### 5) Resumo do pedido
+### 4) Resumo do pedido
 Endpoint:
 - `GET /v1/orders/{orderId}`
 
@@ -71,7 +65,7 @@ Retorna:
 - total
 - pagamentos
 
-### 6) Atualizacao de detalhes do pedido (OD)
+### 5) Atualizacao de detalhes do pedido (OD)
 Endpoint:
 - `PATCH /v1/orders/{orderId}/details`
 
@@ -79,9 +73,9 @@ Campos permitidos neste mock:
 - `preparationStartDateTime`
 - `extraInfo`
 
-### 7) Recebimento de evento de pedido
+### 6) Recebimento de evento de pedido
 Endpoint:
-- `POST /v1/newEvent`
+- `POST /v1/orderUpdate`
 
 Validacoes:
 - `eventType` deve ser `CREATED`
@@ -99,8 +93,7 @@ Validacoes:
 - `GET /v1/merchant`
 - `GET /v1/products/{id}` (compatibilidade)
 - `GET /v1/catalog` (compatibilidade para lista de categorias/produtos)
-- `GET /v1/catalog/items/{itemId}/suggestions` (extensao custom)
-- `POST /v1/newEvent`
+- `POST /v1/orderUpdate`
 - `GET /v1/orders/{orderId}`
 - `PATCH /v1/orders/{orderId}/details`
 
@@ -108,25 +101,25 @@ Validacoes:
 - `POST /v1/ws/emit`
 - `WS /v1/ws?api_key=...`
 
-### Legado descontinuado
-- `POST /v1/orderUpdate` -> `410 GONE`
-
 ## Arquivos de dados
-- `data/merchant.json`: estrutura principal OpenDelivery (categorias, items, itemOffers, optionGroups)
-- `data/suggestions.json`: mapeamento de sugestoes por item
+- `data/catalog.json`: fonte principal de categorias/produtos/compositions/combinations
 - `data/orders_static.json`: pedido estatico de referencia
 - `data/orders_dynamic.json`: persistencia de pedidos recebidos
 
 ## Testes
 ```bash
+# iniciar servidor em outro terminal
+bun start
+
+# executar suite
 bun run test
 ```
 Cobertura atual valida:
-- merchant
-- suggestions
-- newEvent
-- orders get/patch
-- legado 410
+- config/bootstrap/catalog/merchant
+- consistencia de customizacao entre merchant/catalog/products
+- regra de remocoes (WITHOUT) e complementos (EXTRA)
+- orderUpdate
+- orders get
 - websocket
 
 ## OpenAPI e Postman
